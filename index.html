@@ -1,0 +1,637 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>A Sales Assistant Stops Being Believable the Moment It Refuses to Escalate</title>
+  <meta name="description" content="An escalation-first architecture brief for an on-prem sales assistant built around qualification boundaries, retrieval limits, and deliberate human takeover.">
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&amp;family=IBM+Plex+Sans:wght@400;500;600;700&amp;family=IBM+Plex+Mono:wght@400;500;600&amp;display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #ffffff;
+      --ink: #111111;
+      --soft: #333333;
+      --muted: #555555;
+      --quiet: #888888;
+      --rule: #e8e8e8;
+      --panel: #f5f5f5;
+      --panel-deep: #f0f0f0;
+      --white: #ffffff;
+      --black: #111111;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: "IBM Plex Sans", system-ui, sans-serif;
+      line-height: 1.72;
+    }
+
+    a {
+      color: inherit;
+      text-decoration-thickness: 1px;
+      text-underline-offset: 0.16em;
+    }
+
+    .page {
+      max-width: 1320px;
+      margin: 0 auto;
+      padding: 20px 20px 56px;
+    }
+
+    .hero {
+      border: 1px solid var(--black);
+      display: grid;
+      grid-template-columns: 1fr 320px;
+      background: var(--white);
+    }
+
+    .hero-main {
+      padding: 34px 38px 30px;
+      border-right: 1px solid var(--black);
+      background:
+        linear-gradient(180deg, #ffffff 0, #ffffff 68%, #f5f5f5 68%, #f5f5f5 100%);
+    }
+
+    .hero-side {
+      padding: 24px;
+      background: var(--panel);
+      display: grid;
+      gap: 18px;
+      align-content: start;
+    }
+
+    .kicker {
+      margin: 0 0 14px;
+      font-family: "IBM Plex Mono", monospace;
+      font-size: 0.78rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      margin: 0;
+      max-width: 11ch;
+      font-family: "Space Grotesk", system-ui, sans-serif;
+      font-size: clamp(3rem, 5.3vw, 5.5rem);
+      line-height: 0.94;
+      letter-spacing: -0.05em;
+      text-transform: uppercase;
+    }
+
+    .deck {
+      max-width: 48rem;
+      margin: 18px 0 0;
+      font-size: 1.12rem;
+      color: var(--muted);
+    }
+
+    .hero-stats {
+      margin-top: 30px;
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .hero-stat {
+      border-top: 1px solid var(--black);
+      padding-top: 10px;
+    }
+
+    .hero-stat span {
+      display: block;
+      margin-bottom: 8px;
+      font-family: "IBM Plex Mono", monospace;
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--muted);
+    }
+
+    .hero-stat strong {
+      font-size: 1.4rem;
+      font-weight: 600;
+    }
+
+    .side-box {
+      border-top: 1px solid var(--black);
+      padding-top: 10px;
+    }
+
+    .side-box h2,
+    .side-box p,
+    .side-box ul {
+      margin: 0;
+    }
+
+    .side-box h2 {
+      margin-bottom: 10px;
+      font-family: "IBM Plex Mono", monospace;
+      font-size: 0.78rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .side-box ul {
+      padding-left: 18px;
+      font-size: 0.95rem;
+      color: var(--soft);
+    }
+
+    .side-note {
+      border: 1px solid var(--soft);
+      background: var(--white);
+      padding: 14px;
+      font-size: 0.95rem;
+    }
+
+    .column {
+      max-width: 860px;
+      margin: 22px auto 0;
+      display: grid;
+      gap: 26px;
+    }
+
+    .intro {
+      border-left: 4px solid var(--black);
+      background: var(--panel);
+      padding: 14px 16px;
+      font-size: 1rem;
+    }
+
+    .state-card {
+      border-top: 2px solid var(--black);
+      padding-top: 18px;
+    }
+
+    .state-card h2 {
+      margin: 0 0 16px;
+      font-family: "Space Grotesk", system-ui, sans-serif;
+      font-size: clamp(1.8rem, 2.8vw, 2.7rem);
+      line-height: 1;
+      letter-spacing: -0.04em;
+      text-transform: uppercase;
+    }
+
+    .state-chip {
+      display: inline-block;
+      margin-bottom: 10px;
+      padding: 4px 8px;
+      background: var(--black);
+      color: var(--white);
+      font-family: "IBM Plex Mono", monospace;
+      font-size: 0.76rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .state-card p,
+    .state-card ul,
+    .state-card table {
+      margin: 0 0 16px;
+    }
+
+    .state-card ul {
+      padding-left: 20px;
+    }
+
+    .lead {
+      font-size: 1.08rem;
+    }
+
+    .interrupt {
+      margin: 18px 0;
+      padding: 16px 18px;
+      background: var(--panel-deep);
+      border: 1px solid var(--rule);
+      font-size: 1rem;
+    }
+
+    .interrupt strong {
+      font-family: "IBM Plex Mono", monospace;
+      font-size: 0.76rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      display: block;
+      margin-bottom: 8px;
+    }
+
+    .rule-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 16px;
+      margin: 10px 0 18px;
+    }
+
+    .rule-box {
+      border: 1px solid var(--rule);
+      background: var(--panel);
+      padding: 14px;
+    }
+
+    .rule-box strong {
+      display: block;
+      margin-bottom: 8px;
+      font-family: "IBM Plex Mono", monospace;
+      font-size: 0.75rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    figure { margin: 0; }
+
+    .figure-frame {
+      border: 1px solid var(--black);
+      background: var(--white);
+      padding: 18px;
+    }
+
+    svg {
+      display: block;
+      width: 100%;
+      height: auto;
+      font-family: "IBM Plex Sans", system-ui, sans-serif;
+    }
+
+    figcaption {
+      margin-top: 10px;
+      color: var(--muted);
+      font-style: italic;
+    }
+
+    .code {
+      margin: 18px 0;
+      padding: 18px 20px;
+      background: #111111;
+      color: #f5f5f5;
+      border: 1px solid #111111;
+      overflow-x: auto;
+    }
+
+    pre,
+    code {
+      font-family: "IBM Plex Mono", monospace;
+    }
+
+    pre {
+      margin: 0;
+      white-space: pre;
+      font-size: 0.9rem;
+      line-height: 1.56;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.96rem;
+    }
+
+    th,
+    td {
+      border: 1px solid var(--rule);
+      padding: 10px 12px;
+      text-align: left;
+      vertical-align: top;
+    }
+
+    th {
+      background: var(--panel);
+      font-family: "IBM Plex Mono", monospace;
+      font-size: 0.76rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .closing {
+      border-top: 2px solid var(--black);
+      padding-top: 16px;
+      font-size: 1.08rem;
+    }
+
+    @media (max-width: 980px) {
+      .hero {
+        grid-template-columns: 1fr;
+      }
+
+      .hero-main {
+        border-right: none;
+        border-bottom: 1px solid var(--black);
+      }
+    }
+
+    @media (max-width: 760px) {
+      .page {
+        padding: 12px 12px 36px;
+      }
+
+      .hero-stats,
+      .rule-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .figure-frame {
+        padding: 10px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <header class="hero">
+      <section class="hero-main">
+        <p class="kicker">Escalation-First Architecture Brief / SalesTech</p>
+        <h1>A Sales Assistant Stops Being Believable the Moment It Refuses to Escalate</h1>
+        <p class="deck">The only defensible version of an LLM sales assistant is a bounded front-end worker for repetitive discovery and qualification. It can greet, ask structured questions, retrieve approved facts, and package context. It should not freestyle pricing, improvise legal commitments, or bluff its way through negotiation just to avoid involving a human seller.</p>
+        <div class="hero-stats">
+          <div class="hero-stat">
+            <span>Primary Job</span>
+            <strong>Discovery + qualification</strong>
+          </div>
+          <div class="hero-stat">
+            <span>Deployment Bias</span>
+            <strong>On-prem / local stack</strong>
+          </div>
+          <div class="hero-stat">
+            <span>Inference Constraint</span>
+            <strong>CPU-only optimization</strong>
+          </div>
+          <div class="hero-stat">
+            <span>Non-Negotiable Rule</span>
+            <strong>Escalate on risk</strong>
+          </div>
+        </div>
+      </section>
+      <aside class="hero-side">
+        <div class="side-box">
+          <h2>What The Repo Actually Says</h2>
+          <ul>
+            <li>Discovery steps and negotiation handoffs were mapped with sales ops.</li>
+            <li>Intents, entities, guardrails, and success criteria came from real call transcripts and outcomes.</li>
+            <li>The stack is on-prem with local embeddings and tokenization.</li>
+            <li>Confidence thresholds and full transcript handoff are explicit design choices.</li>
+          </ul>
+        </div>
+        <div class="side-box">
+          <h2>What The Repo Does Not Show</h2>
+          <ul>
+            <li>No source code or prompt files.</li>
+            <li>No actual threshold tables.</li>
+            <li>No measured pilot numbers beyond the README’s named metrics.</li>
+          </ul>
+        </div>
+        <div class="side-note">That is enough to explain the control logic. It is not enough to pretend the assistant can independently “run sales.” This page stays on the right side of that line.</div>
+      </aside>
+    </header>
+
+    <main class="column">
+      <div class="intro">Evidence note: this folder is README-led rather than implementation-led. The article below is grounded in the repo’s stated ingredients: transcript-based intent design, template-driven dialogue flow, local embeddings, CPU inference constraints, confidence thresholds, sandbox and pilot validation, and human escalation for pricing or negotiation.</div>
+
+      <figure>
+        <div class="figure-frame">
+          <svg viewBox="0 0 980 1280" role="img" aria-labelledby="spine-title spine-desc">
+            <title id="spine-title">Conversation spine for the LLM sales assistant</title>
+            <desc id="spine-desc">A tall state-machine style diagram with conversation states for greeting, qualification, retrieval, objection handling, fallback, and human escalation, including side notes for what the model is allowed to do in each state.</desc>
+            <defs>
+              <marker id="arrow-s" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto">
+                <path d="M0,0 L10,5 L0,10 z" fill="#111111"></path>
+              </marker>
+            </defs>
+
+            <rect x="20" y="20" width="940" height="1240" fill="#ffffff" stroke="#111111" stroke-width="1.5"></rect>
+
+            <line x1="350" y1="120" x2="350" y2="1140" stroke="#111111" stroke-width="2"></line>
+
+            <text x="62" y="70" font-size="24" font-weight="700" fill="#111111">Conversation spine</text>
+            <text x="62" y="98" font-size="14" fill="#555555">The system is a controlled progression of allowed states, not a free-form agent chasing every commercial question.</text>
+
+            <circle cx="350" cy="170" r="18" fill="#111111"></circle>
+            <rect x="388" y="128" width="210" height="84" fill="#f5f5f5" stroke="#111111" stroke-width="1.3"></rect>
+            <text x="406" y="158" font-size="16" font-weight="700" fill="#111111">Greeting</text>
+            <text x="406" y="183" font-size="13" fill="#111111">Open, identify channel, set context.</text>
+            <rect x="630" y="132" width="258" height="74" fill="#ffffff" stroke="#333333" stroke-width="1.2"></rect>
+            <text x="648" y="160" font-size="13" font-weight="600" fill="#111111">Allowed</text>
+            <text x="648" y="181" font-size="12" fill="#111111">Polite opening and basic routing only.</text>
+
+            <line x1="350" y1="188" x2="350" y2="286" stroke="#111111" stroke-width="1.5" marker-end="url(#arrow-s)"></line>
+
+            <circle cx="350" cy="328" r="18" fill="#111111"></circle>
+            <rect x="388" y="286" width="210" height="96" fill="#111111" stroke="#111111" stroke-width="1.3"></rect>
+            <text x="406" y="316" font-size="16" font-weight="700" fill="#f5f5f5">Qualification</text>
+            <text x="406" y="338" font-size="12" fill="#f5f5f5">Ask structured discovery questions.</text>
+            <text x="406" y="358" font-size="12" fill="#dddddd">Capture intent, role, timing, pain.</text>
+            <rect x="630" y="296" width="258" height="78" fill="#f5f5f5" stroke="#333333" stroke-width="1.2"></rect>
+            <text x="648" y="324" font-size="13" font-weight="600" fill="#111111">Allowed</text>
+            <text x="648" y="345" font-size="12" fill="#111111">Template-led questions using known intents</text>
+            <text x="648" y="362" font-size="12" fill="#111111">and entities from transcripts.</text>
+
+            <line x1="350" y1="346" x2="350" y2="444" stroke="#111111" stroke-width="1.5" marker-end="url(#arrow-s)"></line>
+
+            <circle cx="350" cy="486" r="18" fill="#111111"></circle>
+            <rect x="388" y="444" width="210" height="96" fill="#f5f5f5" stroke="#111111" stroke-width="1.3"></rect>
+            <text x="406" y="474" font-size="16" font-weight="700" fill="#111111">Retrieval</text>
+            <text x="406" y="496" font-size="12" fill="#111111">Fetch approved product or process facts.</text>
+            <text x="406" y="516" font-size="12" fill="#111111">Return bounded answers.</text>
+            <rect x="630" y="454" width="258" height="82" fill="#ffffff" stroke="#333333" stroke-width="1.2"></rect>
+            <text x="648" y="482" font-size="13" font-weight="600" fill="#111111">Allowed</text>
+            <text x="648" y="503" font-size="12" fill="#111111">Use local embeddings and curated knowledge.</text>
+            <text x="648" y="520" font-size="12" fill="#111111">No invented commitments.</text>
+
+            <line x1="350" y1="504" x2="350" y2="602" stroke="#111111" stroke-width="1.5" marker-end="url(#arrow-s)"></line>
+
+            <circle cx="350" cy="644" r="18" fill="#111111"></circle>
+            <rect x="388" y="602" width="210" height="96" fill="#f5f5f5" stroke="#111111" stroke-width="1.3"></rect>
+            <text x="406" y="632" font-size="16" font-weight="700" fill="#111111">Objection handling</text>
+            <text x="406" y="654" font-size="12" fill="#111111">Clarify known concerns and route uncertainty.</text>
+            <text x="406" y="674" font-size="12" fill="#111111">Stay inside approved response frames.</text>
+            <rect x="630" y="612" width="258" height="82" fill="#f5f5f5" stroke="#333333" stroke-width="1.2"></rect>
+            <text x="648" y="640" font-size="13" font-weight="600" fill="#111111">Allowed</text>
+            <text x="648" y="661" font-size="12" fill="#111111">Answer common objections only while</text>
+            <text x="648" y="678" font-size="12" fill="#111111">confidence remains high and stakes stay low.</text>
+
+            <line x1="350" y1="662" x2="350" y2="760" stroke="#111111" stroke-width="1.5" marker-end="url(#arrow-s)"></line>
+
+            <circle cx="350" cy="802" r="18" fill="#111111"></circle>
+            <rect x="388" y="760" width="210" height="96" fill="#ffffff" stroke="#111111" stroke-width="1.3"></rect>
+            <text x="406" y="790" font-size="16" font-weight="700" fill="#111111">Confidence check</text>
+            <text x="406" y="812" font-size="12" fill="#111111">Thresholds decide continue vs escalate.</text>
+            <text x="406" y="832" font-size="12" fill="#111111">Fallback if intent is unclear.</text>
+            <rect x="630" y="770" width="258" height="80" fill="#ffffff" stroke="#333333" stroke-width="1.2"></rect>
+            <text x="648" y="798" font-size="13" font-weight="600" fill="#111111">Allowed</text>
+            <text x="648" y="819" font-size="12" fill="#111111">Use measured confidence, not sales optimism,</text>
+            <text x="648" y="836" font-size="12" fill="#111111">to decide the next state.</text>
+
+            <line x1="350" y1="820" x2="350" y2="918" stroke="#111111" stroke-width="1.5" marker-end="url(#arrow-s)"></line>
+
+            <circle cx="350" cy="960" r="18" fill="#111111"></circle>
+            <rect x="388" y="918" width="210" height="96" fill="#111111" stroke="#111111" stroke-width="1.3"></rect>
+            <text x="406" y="948" font-size="16" font-weight="700" fill="#f5f5f5">Human escalation</text>
+            <text x="406" y="973" font-size="13" fill="#f5f5f5">Negotiation, pricing, unusual risk,</text>
+            <text x="406" y="994" font-size="13" fill="#dddddd">or low-confidence routing.</text>
+            <rect x="630" y="928" width="258" height="80" fill="#f5f5f5" stroke="#333333" stroke-width="1.2"></rect>
+            <text x="648" y="956" font-size="13" font-weight="600" fill="#111111">Required</text>
+            <text x="648" y="977" font-size="12" fill="#111111">Pass full transcript, extracted entities,</text>
+            <text x="648" y="994" font-size="12" fill="#111111">and reason for takeover to the seller.</text>
+
+            <line x1="350" y1="978" x2="350" y2="1076" stroke="#111111" stroke-width="1.5" marker-end="url(#arrow-s)"></line>
+
+            <circle cx="350" cy="1118" r="18" fill="#111111"></circle>
+            <rect x="388" y="1076" width="210" height="84" fill="#f5f5f5" stroke="#111111" stroke-width="1.3"></rect>
+            <text x="406" y="1106" font-size="16" font-weight="700" fill="#111111">CRM / downstream handoff</text>
+            <text x="406" y="1128" font-size="12" fill="#111111">Persist context for follow-up and analytics.</text>
+            <rect x="630" y="1084" width="258" height="84" fill="#ffffff" stroke="#333333" stroke-width="1.2"></rect>
+            <text x="648" y="1112" font-size="13" font-weight="600" fill="#111111">Outcome</text>
+            <text x="648" y="1126" font-size="12" fill="#111111">The assistant prepares the seller.</text>
+            <text x="648" y="1143" font-size="12" fill="#111111">It does not replace one.</text>
+          </svg>
+        </div>
+        <figcaption>The assistant is credible only as a controlled state machine. Each stage has explicit permissions, and escalation is a success path, not an embarrassment.</figcaption>
+      </figure>
+
+      <section class="state-card">
+        <span class="state-chip">State: Greeting / Qualify</span>
+        <h2>Start with repetitive discovery work, because that is where automation helps and improvisation hurts.</h2>
+        <p class="lead">The README defines the problem well: sales teams lose time on repetitive discovery chats, early conversations are inconsistent, and key qualifying details go missing before the deal reaches a human who can actually close it. That is a sensible place to apply an assistant. Not because the assistant is “good at selling,” but because the front edge of the funnel contains structured repetition that humans often execute unevenly.</p>
+        <p>There is a difference between discovery and persuasion, and sales-assistant pages often collapse the two. Discovery is a bounded information-gathering task. You need the buyer’s role, timeline, pain, size, use case, urgency, and maybe channel preference or budget posture. Those are exactly the kinds of details that can be captured more consistently through defined intents, entities, and prompt frames. Persuasion, especially once money or contract risk enters the room, is another matter entirely.</p>
+        <p>The README’s strongest evidence is that discovery steps and negotiation handoffs were mapped with sales ops using real call transcripts and outcomes. That is the right foundation. Without transcript-backed state design, most sales assistants devolve into well-spoken improvisers that sound plausible while quietly skipping the questions revenue teams actually need answered.</p>
+        <div class="interrupt">
+          <strong>Design Rule</strong>
+          <p>The assistant is allowed to ask questions and package answers. It is not allowed to treat every conversation as an opportunity to chase conversion with unlimited conversational freedom.</p>
+        </div>
+        <p>I also like that the repo frames early inconsistency as a process problem, not just a messaging problem. If different reps are using different scripts and capturing different details, the business does not merely have uneven style. It has unreliable intake quality. Automation is useful here because it can enforce a baseline discovery discipline that humans often skip when inboxes are full and response pressure is high.</p>
+      </section>
+
+      <section class="state-card">
+        <span class="state-chip">State: Dialogue Flow</span>
+        <h2>The believable architecture is a dialogue state machine, not a free-roaming “AI rep.”</h2>
+        <p class="lead">The README mentions template-driven dialogue flow and intent-based routing. That combination is a much stronger design choice than people give it credit for. It means the system is not relying on raw generative confidence alone. It is shaping conversations around known states and known transitions.</p>
+        <p>This matters because sales conversations contain branch points with very different risk profiles. Greeting and channel identification are low risk. Basic qualification is moderate and manageable. Product fact retrieval is acceptable if the source material is approved and local. Objection handling can still be safe if it stays within established response patterns. Pricing, special terms, competitor traps, contract language, and custom implementation questions are where the system should stop pretending it is still in routine territory.</p>
+        <p>The state machine is the antidote to autonomy theater. Rather than asking the model to “handle sales,” you give it explicit moves and explicit stop conditions. It can route, summarize, confirm, and retrieve. It can ask the next approved question. It can decide that the conversation no longer belongs to it.</p>
+
+        <div class="code">
+          <pre>def next_state(current_state, intent, confidence, risk_flag):
+    if risk_flag in {"pricing", "negotiation", "legal", "custom_commitment"}:
+        return "escalate_human"   # handoff is the design goal here
+
+    if confidence &lt; 0.72:
+        return "fallback_or_escalate"  # do not bluff through ambiguity
+
+    transitions = {
+        "greeting": "qualification",
+        "qualification": "retrieval",
+        "retrieval": "objection_handling",
+        "objection_handling": "qualification_complete"
+    }
+    return transitions.get(current_state, "escalate_human")</pre>
+        </div>
+
+        <p>Notice what this kind of control logic does philosophically. It treats uncertainty and risk as routing conditions rather than as prompts for “creative recovery.” That is the correct posture. A sales assistant becomes dangerous the moment its recovery strategy is to sound more confident than it should.</p>
+      </section>
+
+      <section class="state-card">
+        <span class="state-chip">State: Retrieval</span>
+        <h2>Retrieval and local tooling matter because factual containment is more important here than expressive range.</h2>
+        <p class="lead">The repo says the stack is on-prem, uses local embeddings and tokenization, and persists context for downstream systems. That package of choices makes sense. Sales teams care about responsiveness, but they also care about data exposure, internal process control, and the ability to keep approved product information close to the environment where conversations happen.</p>
+        <p>The retrieval layer should be treated as a permission system for answers. If the assistant is asked a product question, it should retrieve from curated local knowledge and answer inside that boundary. If it cannot find enough support, it should say so and route the conversation forward. That is a better customer experience than an elegant hallucination. Buyers can tolerate escalation. They do not tolerate false claims once trust breaks.</p>
+        <p>On-prem deployment is doing double duty here. It addresses data-control concerns, and it also reduces dependence on external service variability. The README explicitly calls out latency, cost, and data exposure as problems with remote AI services. That is credible. If the assistant is sitting on the front edge of buyer interaction, shaky connectivity and opaque external routing quickly become commercial problems, not just technical ones.</p>
+
+        <div class="rule-grid">
+          <div class="rule-box">
+            <strong>Allowed Retrieval Use</strong>
+            <p>Summarize approved capabilities, deployment patterns, integration support, and process steps that are already documented and sanctioned.</p>
+          </div>
+          <div class="rule-box">
+            <strong>Not Allowed</strong>
+            <p>Invent pricing concessions, promise roadmap items, infer legal positions, or guess at custom fit when evidence is thin.</p>
+          </div>
+        </div>
+
+        <p>There is a more subtle benefit to local retrieval too: auditability. If you want to inspect why the assistant answered a certain way, a bounded local retrieval path is easier to reason about than a sprawling remote call chain. Sales systems need that traceability because the question after any bad answer is immediate and practical: what source did it use, and why did it think that was sufficient?</p>
+      </section>
+
+      <section class="state-card">
+        <span class="state-chip">State: CPU Constraint</span>
+        <h2>CPU-only optimization is not an implementation detail. It shapes how ambitious the assistant is allowed to be.</h2>
+        <p class="lead">The README says the models were optimized for CPU-only inference. That tells me two things. First, the deployment target cared about ordinary infrastructure rather than GPU-rich experimentation. Second, the dialogue system needed to remain narrow enough that latency and cost stayed acceptable on modest hardware.</p>
+        <p>This is exactly the kind of constraint that improves product honesty. Once you accept CPU-only inference as a serious target, you stop designing around maximal model flourish and start designing around predictable routing, compact prompts, retrieval discipline, and faster confidence decisions. In other words, the system becomes more operational and less theatrical.</p>
+        <p>I would rather read about a CPU-bounded assistant that reliably gathers the right information and escalates cleanly than a GPU-hungry one that occasionally sounds brilliant while smearing uncertainty across the funnel. Frontline sales tooling benefits more from consistency than from linguistic fireworks.</p>
+        <div class="interrupt">
+          <strong>Constraint As Design Aid</strong>
+          <p>Limited inference budget pushes the architecture toward concise templates, tight state control, and a lower tolerance for speculative generation. In this case that is a feature, not a compromise.</p>
+        </div>
+        <p>The repo also mentions sandbox and pilot validation with intent accuracy and containment metrics. That pairing is exactly what I would want. Intent accuracy tells you whether the assistant recognizes the conversation correctly. Containment tells you how often it can finish the bounded part of the job without unnecessary takeover. Neither metric should be interpreted as permission to eliminate human sellers. They only tell you whether the automation boundary is doing its specific work well.</p>
+      </section>
+
+      <section class="state-card">
+        <span class="state-chip">State: Escalation</span>
+        <h2>The handoff boundary is the core product, because negotiation is where bluffing becomes expensive.</h2>
+        <p class="lead">The README is admirably explicit that pricing and negotiation trigger human escalation, with full traceable transcripts carried into the handoff. That is the sentence the entire page should revolve around. Handoff is not a backup plan here. It is the point where the architecture proves it understands commercial risk.</p>
+        <p>Negotiation introduces too many variables for a bounded assistant to own safely. The buyer may be probing for concessions, comparing competitors, signaling unusual procurement rules, or testing whether the vendor can make implementation promises. Even if the model sounds competent, the commercial cost of being confidently wrong is far higher than the convenience of keeping the conversation automated for another three turns.</p>
+        <p>That is why transcript-quality matters. A good escalation does not dump the seller into the conversation cold. It passes the entire path the buyer took: extracted intents, key entities, concerns raised, retrieval results shown, points of hesitation, and the explicit reason for escalation. That is how automation helps the human instead of merely forwarding unfinished work.</p>
+
+        <table>
+          <thead>
+            <tr>
+              <th>Trigger</th>
+              <th>Why The Assistant Should Stop</th>
+              <th>What Must Be Handed Off</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Pricing request or discount pressure</td>
+              <td>Commercial terms require policy, context, and discretion.</td>
+              <td>Lead summary, urgency, budget hints, full transcript, pricing question.</td>
+            </tr>
+            <tr>
+              <td>Negotiation or exception request</td>
+              <td>The system should not invent concessions or promises.</td>
+              <td>Objections, prior responses, account context, escalation reason.</td>
+            </tr>
+            <tr>
+              <td>Low confidence or unclear intent</td>
+              <td>Ambiguity is a routing problem, not a cue for improvisation.</td>
+              <td>Conversation state, candidate intents, confidence trace.</td>
+            </tr>
+            <tr>
+              <td>High-risk product or legal question</td>
+              <td>Approved knowledge may be insufficient for safe commitment.</td>
+              <td>Question text, retrieved context, missing-support note.</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <p>The cultural point matters too. Teams often treat escalation as proof the AI failed. That is a category error. In a well-designed sales assistant, escalation is the intended move whenever the conversation crosses into terms, risk, or genuine ambiguity. Refusing to escalate is what failure looks like.</p>
+      </section>
+
+      <section class="state-card">
+        <span class="state-chip">State: Measurement</span>
+        <h2>The right scorecard is not “how autonomous was it?” but “did it respond quickly, qualify cleanly, and hand off well?”</h2>
+        <p class="lead">The README lists the right post-deployment metrics: time-to-first-response, drop-offs, handoff quality, plus the earlier sandbox measures of intent accuracy and containment. That is a healthier measurement frame than most AI sales pages use. It focuses on process quality and commercial usefulness instead of on theatrical autonomy.</p>
+        <p>Time-to-first-response matters because slow outreach kills early momentum. Drop-off matters because a brittle scripted experience can lose leads before qualification completes. Handoff quality matters because the whole point of bounded automation is to make the human seller sharper, not merely busier. Intent accuracy matters because routing starts with understanding. Containment matters because routine work should actually stay routine when the assistant is functioning well.</p>
+        <p>What I would not optimize for is the percentage of conversations the model touched end to end without human help. That metric seduces teams into pushing the assistant deeper into unsafe territory. The better question is whether the system absorbs repetitive, low-risk work while preserving commercial judgment for the people who are supposed to exercise it.</p>
+        <div class="rule-grid">
+          <div class="rule-box">
+            <strong>Good Success Signal</strong>
+            <p>The assistant captures cleaner discovery data, responds faster, and produces better-informed human follow-ups.</p>
+          </div>
+          <div class="rule-box">
+            <strong>Misleading Success Signal</strong>
+            <p>The assistant stayed in the conversation longer, even though it entered pricing or ambiguity zones where a seller should have taken over earlier.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="state-card">
+        <span class="state-chip">State: Close</span>
+        <h2>The architecture only becomes serious when handoff is treated as a design victory.</h2>
+        <p class="lead">This repo points toward a credible kind of sales assistant because it stays focused on the narrow slice of work that benefits from structured automation: repetitive discovery, qualification, retrieval of approved information, and careful packaging for downstream systems. It also makes the right defensive moves: on-prem deployment, local retrieval, CPU-aware optimization, transcript traceability, and explicit human takeover for pricing or negotiation.</p>
+        <p>The sober lesson is that sales automation gets more believable when it becomes less ambitious. If the system knows its states, knows its retrieval boundary, knows its confidence limits, and knows when to stop talking, then it can actually help. If it is framed as an all-purpose AI seller, it is just a confidence machine pointed at one of the most trust-sensitive parts of the revenue process.</p>
+        <p class="closing">My verdict is straightforward: the assistant should be judged as a qualification-and-handoff system, not as a digital closer. The moment it tries to be the latter, the design becomes fantasy. The moment it escalates well, it starts becoming infrastructure.</p>
+      </section>
+    </main>
+  </div>
+</body>
+</html>
