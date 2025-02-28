@@ -8,3 +8,7 @@
 
 - Task summary: Started this one by sitting down and trying to understand what LLM Sales Assistant should actually become. I did not rush into code yet. The main thing here was to write a simple problem statement for LLM Sales Assistant and the user it serves so the project had a decent base. This was still the messy setup part where I was opening files, checking examples, and trying not to overthink it too early. I spent part of the day just reducing confusion between components, names, and responsibilities.
 - Deliverable: By the end of the day I had problem statement written down in a rough way, which was enough to stop guessing and move into the next step. I also left myself a few rough reminders for the next day so I would not have to rediscover the same context again.
+## 2025-02-28 - Day 1: Problem discovery start
+
+- Task summary: Noticed something off from this morning — the test I wrote this morning had a hardcoded path, swapped it for a relative one.
+- Deliverable: Solid now, moving on.
