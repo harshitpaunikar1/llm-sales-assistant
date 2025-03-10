@@ -40,3 +40,7 @@
 
 - Task summary: Spent another hour on this: fixed a type coercion issue that was causing silent NaN propagation downstream.
 - Deliverable: Minor but worth doing.
+## 2025-03-10 - Day 7: HTML scaffold
+
+- Task summary: Quick follow-up: added a sanity check assertion that would catch obvious data shape issues early.
+- Deliverable: Small fix, clean result.
