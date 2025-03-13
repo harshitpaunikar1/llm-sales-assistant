@@ -60,3 +60,7 @@
 
 - Task summary: One more pass: added inline comments in the dense sections — would have been confusing to revisit without them.
 - Deliverable: Minor but worth doing.
+## 2025-03-13 - Day 10: Artifacts
+
+- Task summary: Ended up revisiting this in the evening — the test I wrote this morning had a hardcoded path, swapped it for a relative one.
+- Deliverable: One of those satisfying small wins.
