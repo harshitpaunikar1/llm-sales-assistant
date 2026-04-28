@@ -10,7 +10,7 @@
 - Deliverable: By the end of the day I had problem statement written down in a rough way, which was enough to stop guessing and move into the next step. I also left myself a few rough reminders for the next day so I would not have to rediscover the same context again.
 ## 2025-02-28 - Day 1: Problem discovery start
 
-- Task summary: Noticed something off from this morning — the test I wrote this morning had a hardcoded path, swapped it for a relative one.
+- Task summary: Noticed something off from this morning - the test I wrote this morning had a hardcoded path, swapped it for a relative one.
 - Deliverable: Solid now, moving on.
 ## 2025-03-03 - Day 2: Research pass
 
@@ -58,11 +58,11 @@
 - Deliverable: Ended the day with support visuals in hand, plus a few side notes on what still needed fixing later. I also left myself a few rough reminders for the next day so I would not have to rediscover the same context again.
 ## 2025-03-13 - Day 10: Artifacts
 
-- Task summary: One more pass: added inline comments in the dense sections — would have been confusing to revisit without them.
+- Task summary: One more pass: added inline comments in the dense sections - would have been confusing to revisit without them.
 - Deliverable: Minor but worth doing.
 ## 2025-03-13 - Day 10: Artifacts
 
-- Task summary: Ended up revisiting this in the evening — the test I wrote this morning had a hardcoded path, swapped it for a relative one.
+- Task summary: Ended up revisiting this in the evening - the test I wrote this morning had a hardcoded path, swapped it for a relative one.
 - Deliverable: One of those satisfying small wins.
 ## 2025-03-14 - Day 11: README check
 
@@ -74,5 +74,5 @@
 - Deliverable: Finished with final polish looking decent enough to call this version done, even if I could still nitpick a few things. It was not super polished, just stable enough that I felt okay moving forward.
 ## 2025-03-17 - Day 12: Polish wrap
 
-- Task summary: Ended up revisiting this in the evening — added one more evaluation metric that felt missing from the earlier comparison.
+- Task summary: Ended up revisiting this in the evening - added one more evaluation metric that felt missing from the earlier comparison.
 - Deliverable: Cleaner than this morning's version.
